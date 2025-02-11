@@ -11,10 +11,10 @@
 	<groupId>com.askegard</groupId>
 	<artifactId>githubdataintegration</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Github Data Integration</name>
+	<name>GitHub Data Integration</name>
 	<properties>
 		<java.version>21</java.version>
-		<spring-cloud.version>2024.0.0</spring-cloud.version>
+		<feign.version>13.2</feign.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -22,10 +22,21 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
+		<!-- Feign Dependencies -->
 		<dependency>
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-core</artifactId>
-			<version>13.5</version>
+			<version>${feign.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-httpclient</artifactId>
+			<version>${feign.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-jackson</artifactId>
+			<version>${feign.version}</version>
 		</dependency>
 
 		<dependency>
