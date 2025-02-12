@@ -4,6 +4,7 @@ import com.askegard.githubdataintegration.exceptions.ServiceCallException;
 import com.askegard.githubdataintegration.models.GitHubRepository;
 import com.askegard.githubdataintegration.models.GitHubUser;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Client;
 import feign.Feign;
@@ -15,6 +16,7 @@ import feign.jackson.JacksonEncoder;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.*;
@@ -32,7 +34,7 @@ public class GitHubClient {
     private static final String USER_AGENT = "GitHubDataIntegration";
     private static final int REPOSITORY_PER_PAGE = 100;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private final GitHubService gitHubService;
 
@@ -61,6 +63,15 @@ public class GitHubClient {
     }
 
     /**
+     * Constructs an instance for mock unit tests
+     *
+     * @param mockGitHubService Mocked GitHub service to stub calls for
+     */
+    GitHubClient(GitHubService mockGitHubService) {
+        this.gitHubService = mockGitHubService;
+    }
+
+    /**
      * Fetches the GitHub user with the given username
      *
      * @param username Username of the user to find
@@ -68,7 +79,7 @@ public class GitHubClient {
      * @throws ServiceCallException If an error occurs while fetching the user, including if the user is not found
      */
     public GitHubUser fetchUserByUsername(final String username) throws ServiceCallException {
-        Objects.requireNonNull(username);
+        Assert.notNull(username, "username must not be null");
 
         try {
             return gitHubService.fetchUserByUsername(username);
@@ -86,7 +97,7 @@ public class GitHubClient {
      * @throws ServiceCallException If an error occurs while fetching the user, including if the user does not exist
      */
     public List<GitHubRepository> fetchUserRepositories(final String username) throws ServiceCallException {
-        Objects.requireNonNull(username);
+        Assert.notNull(username, "username must not be null");
 
         try {
             int pageNumber = 1;
@@ -106,7 +117,7 @@ public class GitHubClient {
         } catch (FeignException e) {
             throw new ServiceCallException(e);
         } catch (IOException e) {
-            throw new ServiceCallException("Failed to parse repository response", e.getMessage(), 400);
+            throw new ServiceCallException("Failed to parse repository response", e.getMessage(), 500);
         }
     }
 }

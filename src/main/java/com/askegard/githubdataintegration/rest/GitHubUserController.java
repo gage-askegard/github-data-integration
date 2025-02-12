@@ -12,12 +12,28 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 public class GitHubUserController {
+    /**
+     * Date format of the timestamps on users fetched from GitHub
+     */
+    private static final DateTimeFormatter GIT_HUB_DATE_FORMAT = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd'T'HH:mm:ssX")
+            .toFormatter();
+
+    /**
+     * Date format desired on the {@link GitHubUserInfo} returned by this controller
+     */
+    private static final DateTimeFormatter OUTPUT_DATE_FORMAT = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd HH:mm:ss")
+            .toFormatter();
 
     @Autowired
     private GitHubClient gitHubClient;
@@ -67,7 +83,19 @@ public class GitHubUserController {
                 gitHubUser.location(),
                 gitHubUser.email(),
                 gitHubUser.html_url(),
-                gitHubUser.created_at(),
+                convertDateFormat(gitHubUser.created_at()),
                 gitHubRepos);
+    }
+
+    /**
+     * Converts the given timestamp string from the {@link #GIT_HUB_DATE_FORMAT} to {@link #OUTPUT_DATE_FORMAT}. If the
+     * timestamp cannot be parsed into the GitHub format, the original timestamp will be returned
+     *
+     * @param timestampString Timestamp string to convert. Should match {@link #GIT_HUB_DATE_FORMAT}
+     * @return The timestamp string converted to {@link #OUTPUT_DATE_FORMAT}
+     */
+    private static String convertDateFormat(final String timestampString) {
+        final var date = LocalDateTime.parse(timestampString, GIT_HUB_DATE_FORMAT);
+        return date.format(OUTPUT_DATE_FORMAT);
     }
 }
